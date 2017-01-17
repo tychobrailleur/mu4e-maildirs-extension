@@ -486,11 +486,26 @@ Given PATH \"/foo/bar/alpha\" will return '(\"/foo\" \"/bar\")."
                                           fmt)))
     (format-spec fmt (funcall mu4e-maildirs-extension-maildir-format-spec m))))
 
+(defmacro mu4e-maildirs-extension-get-bookmark-field (field index)
+  "Macro to define a function accessing bookmark fields.
+If the bookmark uses the new mu4e structure, FIELD is retrieved
+the structure way, otherwise old-style bookmark format is assumed,
+and the field is retrieved using INDEX."
+  `(defun ,(intern (concat "mu4e-maildirs-extension-get-bookmark-" field))
+       (bm)
+     ,(format "Get the `%s' field from bookmark BM." field)
+     (if (and (fboundp 'mu4e-bookmark-p) (mu4e-bookmark-p bm))
+         (eval (funcall (intern (concat "mu4e-bookmark-" ,field)) bm))
+       (eval (nth ,index bm)))))
+
+(mu4e-maildirs-extension-get-bookmark-field "query" 0)
+(mu4e-maildirs-extension-get-bookmark-field "name"  1)
+
 (defun mu4e-maildirs-extension-load-bookmarks ()
   "Fetch data or load from cache."
   (unless mu4e-maildirs-extension-bookmarks
     (mapc (lambda(it)
-            (let ((query (eval (nth 0 it)))
+            (let ((query (mu4e-maildirs-extension-get-bookmark-query it))
                   (bm (list :data it)))
               (when (stringp query)
                 (add-to-list 'mu4e-maildirs-extension-bookmarks bm t)
@@ -593,7 +608,7 @@ clicked."
 (defun mu4e-maildirs-extension-bm-update (bm)
   "Update bookmark BM entry at MARKER in mu4e main view."
   (let* ((data (plist-get bm :data))
-         (title (nth 1 data)))
+         (title (mu4e-maildirs-extension-get-bookmark-name data)))
     (goto-char (point-min))
     (when (search-forward title nil t)
       (delete-region (point) (point-at-eol))

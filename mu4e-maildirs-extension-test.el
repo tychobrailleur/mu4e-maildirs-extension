@@ -357,5 +357,26 @@ Each subdirectory is not a valid submaildir but a dir containing submaildirs."
                        0)
                    1))))
 
+(ert-deftest mu4e-maildirs-extension-get-bookmark-query/accept-structure ()
+  (let* ((bookmark (make-mu4e-bookmark :query "date:today..now")))
+      (should (equal (mu4e-maildirs-extension-get-bookmark-query bookmark)
+                     "date:today..now"))))
+
+(ert-deftest mu4e-maildirs-extension-get-bookmark-query/support-old-style ()
+  (let* ((bookmark '("date:today..now" "Today" 42)))
+      (should (equal (mu4e-maildirs-extension-get-bookmark-query bookmark)
+                     "date:today..now"))))
+
+(ert-deftest mu4e-maildirs-extension-get-bookmark-name/accept-structure ()
+  (let* ((bookmark (make-mu4e-bookmark :name "Today" :query "date:today..now")))
+      (should (equal (mu4e-maildirs-extension-get-bookmark-name bookmark)
+                     "Today"))))
+
+(ert-deftest mu4e-maildirs-extension-get-bookmark-query/support-old-style ()
+  (let* ((bookmark '("date:today..now" "Today" 42)))
+      (should (equal (mu4e-maildirs-extension-get-bookmark-name bookmark)
+                     "Today"))))
+
+
 (provide 'mu4e-maildirs-extension-test)
 ;;; mu4e-maildirs-extension-test.el ends here
